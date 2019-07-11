@@ -155,7 +155,7 @@ async function reset() {
             value.snapshot.type === 'dev' ? '--dev' : ''
         ], { cwd }));
         all.push(del(path.join(cwd, '.connect-deps.json')));
-        all.push(del(path.join(value.path, 'node_modules/.connect-deps-cache'), { force: true }));
+        all.push(del(path.join(value.path, '.connect-deps-cache'), { force: true }));
     }
 
     try {
@@ -175,9 +175,9 @@ async function packInstall(config) {
 
     conf.set(config.name, Object.assign(config, { running: true }));
     console.log(`Connecting ${config.name}...`);
-    const name = `./node_modules/.connect-deps-cache/${config.name}-${config.version}-${Date.now()}.tgz`;
+    const name = `./.connect-deps-cache/${config.name}-${config.version}-${Date.now()}.tgz`;
 
-    fs.mkdirSync(path.join(config.path, 'node_modules/.connect-deps-cache'), { recursive: true });
+    fs.mkdirSync(path.join(config.path, '.connect-deps-cache'), { recursive: true });
     try {
         await execa('yarn', ['pack', '--filename', name], { cwd: config.path });
         await execa('yarn', [
