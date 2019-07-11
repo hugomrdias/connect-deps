@@ -1,0 +1,85 @@
+{
+    "name": "connect-deps",
+    "version": "0.0.0",
+    "description": "My astonishing module",
+    "repository": "hugomrdias/connect-deps",
+    "author": "Hugo Dias <hugomrdias@gmail.com> (hugodias.me)",
+    "license": "MIT",
+    "main": "index.js",
+    "bin": "cli.js",
+    "engines": {
+        "node": ">=4"
+    },
+    "scripts": {
+        "test": "nyc ava",
+        "lint": "eslint --cache *.js src/*.js",
+        "validate": "run-p lint test",
+        "precommit": "yarn validate",
+        "version": "yarn changelog && git add changelog.md",
+        "changelog": "conventional-changelog -p angular -i changelog.md -s -r 0",
+        "cov": "yarn test && nyc report --reporter=html && hs coverage -s -o -c-1",
+        "cov:report": "nyc report --reporter=text-lcov > coverage.lcov && codecov"
+    },
+    "files": [
+        "index.js",
+        "cli.js"
+    ],
+    "keywords": [
+        "cli-app",
+        "cli",
+        ""
+    ],
+    "dependencies": {
+        "chokidar": "^3.0.2",
+        "conf": "^5.0.0",
+        "del": "^5.0.0",
+        "execa": "^2.0.3",
+        "meow": "^5.0.0",
+        "read-pkg-up": "^6.0.0"
+    },
+    "devDependencies": {
+        "@commitlint/cli": "^8.0.0",
+        "@commitlint/config-conventional": "^8.0.0",
+        "ava": "^2.2.0",
+        "codecov": "^3.5.0",
+        "conventional-changelog-cli": "^2.0.21",
+        "eslint": "^4.7.1",
+        "eslint-config-halo": "^2.3.3",
+        "http-serve": "^1.0.1",
+        "husky": "^3.0.0",
+        "lint-staged": "^9.1.0",
+        "np": "^5.0.3",
+        "npm-run-all": "^4.1.1",
+        "nyc": "^11.0.0"
+    },
+    "husky": {
+        "hooks": {
+            "pre-commit": "lint-staged",
+            "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+        }
+    },
+    "lint-staged": {
+        "*.js": [
+            "eslint --fix",
+            "git add"
+        ]
+    },
+    "commitlint": {
+        "extends": [
+            "@commitlint/config-conventional"
+        ]
+    },
+    "eslintConfig": {
+        "extends": "halo/plugins",
+        "parserOptions": {
+            "sourceType": "script"
+        }
+    },
+    "eslintIgnore": [
+        "node_modules",
+        "coverage",
+        "dist",
+        "storybook-static",
+        "typings"
+    ]
+}
