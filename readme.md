@@ -14,7 +14,7 @@ This can became problematic in some cases, to solve this problem this package "l
 ```bash
 # first link the dependency from your current repo
 connect-deps link ../package-linkded
-# after you can `connect` to stay linked
+# after, you can `connect` to stay in sync
 connect-deps connect
 # or use watch mode to listen to changes and update the current repo
 connect-deps connect -w
