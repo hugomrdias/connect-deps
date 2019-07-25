@@ -60,7 +60,7 @@ if (cmd === 'reset') {
 
 function link() {
     const connectedPath = path.resolve(cwd, cli.input[1]);
-    const connectedPkg = readPkgUp.sync({ cwd: path.resolve(cwd, cli.input[1]) });
+    const connectedPkg = readPkgUp.sync({ cwd: connectedPath });
 
     if (connectedPkg) {
         let version;
@@ -149,13 +149,13 @@ async function reset() {
         const value = deps[key];
 
         console.log(`Resetting ${key}...`);
-        all.push(execa('yarn', [
-            'add',
+        all.push(execa('npm', [
+            'install',
             `${value.name}@${value.snapshot.version}`,
-            value.snapshot.type === 'dev' ? '--dev' : ''
+            value.snapshot.type === 'dev' ? '--save-dev' : ''
         ], { cwd }));
         all.push(del(path.join(cwd, '.connect-deps.json')));
-        all.push(del(path.join(value.path, '.connect-deps-cache'), { force: true }));
+        all.push(del(path.join(cwd, '.connect-deps-cache'), { force: true }));
     }
 
     try {
@@ -175,15 +175,27 @@ async function packInstall(config) {
 
     conf.set(config.name, Object.assign(config, { running: true }));
     console.log(`Connecting ${config.name}...`);
-    const name = `./.connect-deps-cache/${config.name}-${config.version}-${Date.now()}.tgz`;
+    const name = `${config.name}-${config.version}.tgz`;
+    const uniqueName = `${config.name}-${config.version}-${Date.now()}.tgz`;
 
-    fs.mkdirSync(path.join(config.path, '.connect-deps-cache'), { recursive: true });
+    // Create a cache directory in the project directory we call `link` from
+    const depsCache = path.join(cwd, '.connect-deps-cache');
+
+    fs.mkdirSync(depsCache, { recursive: true });
+
     try {
-        await execa('yarn', ['pack', '--filename', name], { cwd: config.path });
-        await execa('yarn', [
-            'add',
-            'file:' + path.join(config.path, name),
-            config.snapshot.type === 'dev' ? '--dev' : ''
+        await execa('npm', ['pack', config.path], { cwd: depsCache });
+        // Rename the packed file into something unique to make sure that the
+        // newly created one gets installed and not some older version of it
+        fs.renameSync(
+            path.join(depsCache, name),
+            path.join(depsCache, uniqueName)
+        );
+
+        await execa('npm', [
+            'install',
+            'file:' + path.join(depsCache, uniqueName),
+            config.snapshot.type === 'dev' ? '--save-dev' : ''
         ], { cwd });
         console.log(`Connecting ${config.name} done.`);
     } catch (err) {
