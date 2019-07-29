@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /* eslint-disable guard-for-in */
-
+/* eslint-disable no-await-in-loop */
 'use strict';
 
 const fs = require('fs');
@@ -18,6 +18,7 @@ const conf = new Conf({
     cwd,
     configName: '.connect-deps'
 });
+let isRunning = false;
 
 const cli = meow(`
 Usage
@@ -51,7 +52,7 @@ if (cmd === 'link') {
 }
 
 if (cmd === 'connect') {
-    run();
+    connect();
 }
 
 if (cmd === 'reset') {
@@ -64,6 +65,9 @@ function link() {
 
     if (connectedPkg) {
         let version;
+
+        // create the folder to store the pack files
+        fs.mkdirSync(path.join(cwd, '.connect-deps-cache'), { recursive: true });
 
         for (const prop in pkg.dependencies) {
             if (prop === connectedPkg.package.name) {
@@ -98,97 +102,123 @@ function link() {
                 }
             }
         }
-
-        if (version) {
-            packInstall(conf.get(connectedPkg.package.name));
-        }
     } else {
         console.error(`Error: can't find ${connectedPath}`);
     }
 }
 
-async function run() {
+async function connect() {
     const deps = conf.store;
-    const all = [];
 
-    for (const key in deps) {
-        const value = deps[key];
+    if (cli.flags.watch) {
+        for (const key in deps) {
+            const dep = deps[key];
 
-        if (cli.flags.watch && value.watch) {
             chokidar
-                .watch(value.watch, {
+                .watch(dep.watch, {
                     ignored: /node_modules|\.git/,
-                    cwd: value.path,
+                    cwd: dep.path,
                     // awaitWriteFinish: true,
                     ignoreInitial: true
                 })
                 .on('ready', () => {
-                    console.log(`Watching in ${value.path} for ${value.watch}`);
+                    console.log(`Watching in ${dep.path} for ${dep.watch}`);
                 })
                 .on('all', async () => {
-                    await packInstall(deps[key]);
+                    await packInstall([dep]);
                 })
                 .on('error', err => console.error('error watching: ', err));
-        } else {
-            all.push(packInstall(deps[key]));
         }
-    }
-
-    try {
-        await Promise.all(all);
-    } catch (err) {
-        console.log(err);
+    } else {
+        try {
+            await packInstall(Object.values(deps));
+        } catch (err) {
+            console.error(err);
+        }
     }
 }
 
 async function reset() {
     const deps = conf.store;
-    const all = [];
+    const normal = [];
+    const dev = [];
 
     for (const key in deps) {
-        const value = deps[key];
+        const dep = deps[key];
 
-        console.log(`Resetting ${key}...`);
-        all.push(execa('yarn', [
+        if (dep.snapshot.type === 'dev') {
+            dev.push(`${dep.name}@${dep.snapshot.version}`);
+        } else {
+            normal.push(`${dep.name}@${dep.snapshot.version}`);
+        }
+    }
+
+    if (normal.length > 0) {
+        console.log(`Resetting normal dependencies:  ${normal.join(' ')}`);
+        await execa('yarn', [
             'add',
-            `${value.name}@${value.snapshot.version}`,
-            value.snapshot.type === 'dev' ? '--dev' : ''
-        ], { cwd }));
-        all.push(del(path.join(cwd, '.connect-deps.json')));
-        all.push(del(path.join(value.path, '.connect-deps-cache'), { force: true }));
+            ...normal
+        ]);
+        console.log('Resetting normal dependencies done.');
     }
 
-    try {
-        await Promise.all(all);
-        console.log('Resetting done.');
-    } catch (err) {
-        console.log(err);
+    if (dev.length > 0) {
+        console.log(`Resetting dev dependencies: ${dev.join(' ')}`);
+        await execa('yarn', [
+            'add',
+            ...dev,
+            '--dev'
+        ]);
+        console.log('Resetting dev dependencies done.');
     }
+
+    await del(path.join(cwd, '.connect-deps.json'));
+    await del(path.join(cwd, '.connect-deps-cache'), { force: true });
 }
 
-async function packInstall(config) {
-    if (config.running) {
+async function packInstall(configs = []) {
+    if (isRunning) {
         console.log('Connect is already running, skipped.');
 
         return;
     }
 
-    conf.set(config.name, Object.assign(config, { running: true }));
-    console.log(`Connecting ${config.name}...`);
-    const name = `./.connect-deps-cache/${config.name}-${config.version}-${Date.now()}.tgz`;
+    isRunning = true;
+    const normal = [];
+    const dev = [];
 
-    fs.mkdirSync(path.join(config.path, '.connect-deps-cache'), { recursive: true });
-    try {
-        await execa('yarn', ['pack', '--filename', name], { cwd: config.path });
+    for (const config of configs) {
+        console.log(`Packing ${config.name}...`);
+        const name = `./.connect-deps-cache/${config.name}-${config.version}-${Date.now()}.tgz`;
+        const packFile = path.join(cwd, name);
+
+        await execa('yarn', ['pack', '--filename', packFile], { cwd: config.path });
+        if (config.snapshot.type === 'dev') {
+            dev.push(`file:${packFile}`);
+        } else {
+            normal.push(`file:${packFile}`);
+        }
+        console.log(`Packing ${config.name} done.`);
+    }
+
+    if (normal.length > 0) {
+        console.log('Installing deps.');
         await execa('yarn', [
             'add',
-            'file:' + path.join(config.path, name),
-            config.snapshot.type === 'dev' ? '--dev' : ''
-        ], { cwd });
-        console.log(`Connecting ${config.name} done.`);
-    } catch (err) {
-        console.log(err);
-    } finally {
-        conf.set(config.name, Object.assign(config, { running: false }));
+            ...normal
+        ]);
+        console.log('Installing deps done.');
     }
+    if (dev.length > 0) {
+        console.log('Installing dev deps.');
+        await execa('yarn', [
+            'add',
+            '--dev',
+            ...dev
+        ]);
+        console.log('Installing dev deps done.');
+    }
+
+    isRunning = false;
 }
+
