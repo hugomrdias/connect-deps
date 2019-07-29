@@ -154,7 +154,7 @@ async function reset() {
     }
 
     if (normal.length > 0) {
-        console.log(`Resetting normal dependencies:  ${normal.join(' ')}`);
+        console.log(`Resetting normal dependencies:  ${normal.join(' ')}...`);
         await execa('yarn', [
             'add',
             ...normal
@@ -163,7 +163,7 @@ async function reset() {
     }
 
     if (dev.length > 0) {
-        console.log(`Resetting dev dependencies: ${dev.join(' ')}`);
+        console.log(`Resetting dev dependencies: ${dev.join(' ')}...`);
         await execa('yarn', [
             'add',
             ...dev,
@@ -202,7 +202,7 @@ async function packInstall(configs = []) {
     }
 
     if (normal.length > 0) {
-        console.log('Installing deps.');
+        console.log('Installing deps...');
         await execa('yarn', [
             'add',
             ...normal
@@ -210,7 +210,7 @@ async function packInstall(configs = []) {
         console.log('Installing deps done.');
     }
     if (dev.length > 0) {
-        console.log('Installing dev deps.');
+        console.log('Installing dev deps...');
         await execa('yarn', [
             'add',
             '--dev',
