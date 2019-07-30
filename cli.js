@@ -10,16 +10,18 @@ const ora = require('ora');
 const execa = require('execa');
 const del = require('del');
 const chokidar = require('chokidar');
-const readPkgUp = require('read-pkg-up');
+const pDebounce = require('p-debounce');
+const readPkg = require('read-pkg');
 const Conf = require('conf');
+const { default: PQueue } = require('p-queue');
+const updateNotifier = require('update-notifier');
 
 const cwd = fs.realpathSync(process.cwd());
-const { package: pkg } = readPkgUp.sync({ cwd });
+const pkg = readPkg.sync({ cwd });
 const conf = new Conf({
     cwd,
     configName: '.connect-deps'
 });
-let isRunning = false;
 
 const cli = meow(`
 Usage
@@ -32,6 +34,7 @@ Commands
 
 Options
     --help               Show help.
+    --version            Show version.
     --watch, -w          Watch for changes, works with the 'connect' command only.
 
 Examples
@@ -48,16 +51,21 @@ Examples
 
 const cmd = cli.input[0];
 
-if (cmd === 'link') {
-    link();
-}
+updateNotifier({ pkg: cli.pkg }).notify();
 
-if (cmd === 'connect') {
-    connect();
-}
-
-if (cmd === 'reset') {
-    reset();
+switch (cmd) {
+    case 'link':
+        link();
+        break;
+    case 'connect':
+        connect();
+        break;
+    case 'reset':
+        reset();
+        break;
+    default:
+        cli.showHelp();
+        break;
 }
 
 function link() {
@@ -68,18 +76,18 @@ function link() {
     for (const input of inputs) {
         const spinner = ora(`Linking ${input}`).start();
         const connectedPath = path.resolve(cwd, input);
-        const connectedPkg = readPkgUp.sync({ cwd: connectedPath });
+        const connectedPkg = readPkg.sync({ cwd: connectedPath });
 
         if (connectedPkg) {
             let version;
 
             for (const prop in pkg.dependencies) {
-                if (prop === connectedPkg.package.name) {
+                if (prop === connectedPkg.name) {
                     version = pkg.dependencies[prop];
-                    conf.set(connectedPkg.package.name, {
-                        name: connectedPkg.package.name,
+                    conf.set(connectedPkg.name, {
+                        name: connectedPkg.name,
                         path: connectedPath,
-                        version: connectedPkg.package.version,
+                        version: connectedPkg.version,
                         watch: '**/*',
                         snapshot: {
                             version,
@@ -91,12 +99,12 @@ function link() {
 
             if (!version) {
                 for (const prop in pkg.devDependencies) {
-                    if (prop === connectedPkg.package.name) {
+                    if (prop === connectedPkg.name) {
                         version = pkg.devDependencies[prop];
-                        conf.set(connectedPkg.package.name, {
-                            name: connectedPkg.package.name,
+                        conf.set(connectedPkg.name, {
+                            name: connectedPkg.name,
                             path: connectedPath,
-                            version: connectedPkg.package.version,
+                            version: connectedPkg.version,
                             watch: '**/*',
                             snapshot: {
                                 version,
@@ -119,6 +127,11 @@ async function connect() {
     if (cli.flags.watch) {
         for (const key in deps) {
             const dep = deps[key];
+            const queue = new PQueue({ concurrency: 1 });
+            const queuePackInstall = async (deps) => {
+                queue.add(async () => packInstall(deps));
+            };
+            const debounced = pDebounce(queuePackInstall, 2000, { leading: true });
 
             chokidar
                 .watch(dep.watch, {
@@ -131,7 +144,7 @@ async function connect() {
                     console.log(`Watching in ${dep.path} for ${dep.watch}`);
                 })
                 .on('all', async () => {
-                    await packInstall([dep]);
+                    await debounced([dep]);
                 })
                 .on('error', err => console.error('error watching: ', err));
         }
@@ -185,16 +198,9 @@ async function reset() {
 }
 
 async function packInstall(configs = []) {
-    if (isRunning) {
-        console.log('Connect is already running, skipped.');
-
-        return;
-    }
-
-    isRunning = true;
+    const spinner = ora('Connecting dependencies');
     const normal = [];
     const dev = [];
-    const spinner = ora('Connecting dependencies');
 
     for (const config of configs) {
         spinner.start(`Packing ${config.name}`);
@@ -212,22 +218,13 @@ async function packInstall(configs = []) {
 
     if (normal.length > 0) {
         spinner.start(`Installing dependencies: ${normal.join(' ')}`);
-        await execa('yarn', [
-            'add',
-            ...normal
-        ]);
+        await execa('yarn', ['add', ...normal]);
         spinner.succeed();
     }
     if (dev.length > 0) {
         spinner.start(`Installing dev dependencies: ${dev.join(' ')}`);
-        await execa('yarn', [
-            'add',
-            '--dev',
-            ...dev
-        ]);
+        await execa('yarn', ['add', '--dev', ...dev]);
         spinner.succeed();
     }
-
-    isRunning = false;
 }
 

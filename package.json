@@ -1,7 +1,7 @@
 {
     "name": "connect-deps",
     "version": "0.0.2",
-    "description": "My astonishing module",
+    "description": "This is a CLI tool that intends to be a better yarn/npm link",
     "repository": "hugomrdias/connect-deps",
     "author": "Hugo Dias <hugomrdias@gmail.com> (hugodias.me)",
     "license": "MIT",
@@ -36,7 +36,10 @@
         "execa": "^2.0.3",
         "meow": "^5.0.0",
         "ora": "^3.4.0",
-        "read-pkg-up": "^6.0.0"
+        "p-debounce": "^2.1.0",
+        "p-queue": "^6.1.0",
+        "read-pkg": "^5.2.0",
+        "update-notifier": "^3.0.1"
     },
     "devDependencies": {
         "@commitlint/cli": "^8.0.0",
