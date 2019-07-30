@@ -6,6 +6,7 @@
 const fs = require('fs');
 const path = require('path');
 const meow = require('meow');
+const ora = require('ora');
 const execa = require('execa');
 const del = require('del');
 const chokidar = require('chokidar');
@@ -25,7 +26,7 @@ Usage
     $ connect-deps [cmd]
 
 Commands
-    link /relative/path  Relative path from cwd to dependency to connect.
+    link /relative/path  Relative paths from cwd to dependency to connect.
     connect              Connect a linked dependency.
     reset                Reset everything and clean up.
 
@@ -34,7 +35,7 @@ Options
     --watch, -w          Watch for changes, works with the 'connect' command only.
 
 Examples
-    $ connect-deps link ../dep-folder
+    $ connect-deps link ../dep-folder1 ../dep-folder2
     $ connect-deps connect -w
 `, {
     flags: {
@@ -60,35 +61,21 @@ if (cmd === 'reset') {
 }
 
 function link() {
-    const connectedPath = path.resolve(cwd, cli.input[1]);
-    const connectedPkg = readPkgUp.sync({ cwd: path.resolve(cwd, cli.input[1]) });
+    // create the folder to store the pack files
+    fs.mkdirSync(path.join(cwd, '.connect-deps-cache'), { recursive: true });
+    const inputs = cli.input.slice(1);
 
-    if (connectedPkg) {
-        let version;
+    for (const input of inputs) {
+        const spinner = ora(`Linking ${input}`).start();
+        const connectedPath = path.resolve(cwd, input);
+        const connectedPkg = readPkgUp.sync({ cwd: connectedPath });
 
-        // create the folder to store the pack files
-        fs.mkdirSync(path.join(cwd, '.connect-deps-cache'), { recursive: true });
+        if (connectedPkg) {
+            let version;
 
-        for (const prop in pkg.dependencies) {
-            if (prop === connectedPkg.package.name) {
-                version = pkg.dependencies[prop];
-                conf.set(connectedPkg.package.name, {
-                    name: connectedPkg.package.name,
-                    path: connectedPath,
-                    version: connectedPkg.package.version,
-                    watch: '**/*',
-                    snapshot: {
-                        version,
-                        type: 'normal'
-                    }
-                });
-            }
-        }
-
-        if (!version) {
-            for (const prop in pkg.devDependencies) {
+            for (const prop in pkg.dependencies) {
                 if (prop === connectedPkg.package.name) {
-                    version = pkg.devDependencies[prop];
+                    version = pkg.dependencies[prop];
                     conf.set(connectedPkg.package.name, {
                         name: connectedPkg.package.name,
                         path: connectedPath,
@@ -96,14 +83,33 @@ function link() {
                         watch: '**/*',
                         snapshot: {
                             version,
-                            type: 'dev'
+                            type: 'normal'
                         }
                     });
                 }
             }
+
+            if (!version) {
+                for (const prop in pkg.devDependencies) {
+                    if (prop === connectedPkg.package.name) {
+                        version = pkg.devDependencies[prop];
+                        conf.set(connectedPkg.package.name, {
+                            name: connectedPkg.package.name,
+                            path: connectedPath,
+                            version: connectedPkg.package.version,
+                            watch: '**/*',
+                            snapshot: {
+                                version,
+                                type: 'dev'
+                            }
+                        });
+                    }
+                }
+            }
+            spinner.succeed();
+        } else {
+            spinner.fail(`Error: can't find ${connectedPath}`);
         }
-    } else {
-        console.error(`Error: can't find ${connectedPath}`);
     }
 }
 
@@ -142,6 +148,7 @@ async function reset() {
     const deps = conf.store;
     const normal = [];
     const dev = [];
+    const spinner = ora('Resetting dependencies');
 
     for (const key in deps) {
         const dep = deps[key];
@@ -154,26 +161,27 @@ async function reset() {
     }
 
     if (normal.length > 0) {
-        console.log(`Resetting normal dependencies:  ${normal.join(' ')}`);
+        spinner.start(`Resetting normal dependencies:  ${normal.join(' ')}`);
         await execa('yarn', [
             'add',
             ...normal
         ]);
-        console.log('Resetting normal dependencies done.');
+        spinner.succeed();
     }
 
     if (dev.length > 0) {
-        console.log(`Resetting dev dependencies: ${dev.join(' ')}`);
+        spinner.start(`Resetting dev dependencies: ${dev.join(' ')}`);
         await execa('yarn', [
             'add',
             ...dev,
             '--dev'
         ]);
-        console.log('Resetting dev dependencies done.');
+        spinner.succeed();
     }
-
+    spinner.start('Cleaning up');
     await del(path.join(cwd, '.connect-deps.json'));
     await del(path.join(cwd, '.connect-deps-cache'), { force: true });
+    spinner.succeed();
 }
 
 async function packInstall(configs = []) {
@@ -186,9 +194,10 @@ async function packInstall(configs = []) {
     isRunning = true;
     const normal = [];
     const dev = [];
+    const spinner = ora('Connecting dependencies');
 
     for (const config of configs) {
-        console.log(`Packing ${config.name}...`);
+        spinner.start(`Packing ${config.name}`);
         const name = `./.connect-deps-cache/${config.name}-${config.version}-${Date.now()}.tgz`;
         const packFile = path.join(cwd, name);
 
@@ -198,25 +207,25 @@ async function packInstall(configs = []) {
         } else {
             normal.push(`file:${packFile}`);
         }
-        console.log(`Packing ${config.name} done.`);
+        spinner.succeed();
     }
 
     if (normal.length > 0) {
-        console.log('Installing deps.');
+        spinner.start(`Installing dependencies: ${normal.join(' ')}`);
         await execa('yarn', [
             'add',
             ...normal
         ]);
-        console.log('Installing deps done.');
+        spinner.succeed();
     }
     if (dev.length > 0) {
-        console.log('Installing dev deps.');
+        spinner.start(`Installing dev dependencies: ${dev.join(' ')}`);
         await execa('yarn', [
             'add',
             '--dev',
             ...dev
         ]);
-        console.log('Installing dev deps done.');
+        spinner.succeed();
     }
 
     isRunning = false;
