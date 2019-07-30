@@ -76,31 +76,16 @@ function link() {
     for (const input of inputs) {
         const spinner = ora(`Linking ${input}`).start();
         const connectedPath = path.resolve(cwd, input);
-        const connectedPkg = readPkg.sync({ cwd: connectedPath });
 
-        if (connectedPkg) {
-            let version;
+        try {
+            const connectedPkg = readPkg.sync({ cwd: connectedPath });
 
-            for (const prop in pkg.dependencies) {
-                if (prop === connectedPkg.name) {
-                    version = pkg.dependencies[prop];
-                    conf.set(connectedPkg.name, {
-                        name: connectedPkg.name,
-                        path: connectedPath,
-                        version: connectedPkg.version,
-                        watch: '**/*',
-                        snapshot: {
-                            version,
-                            type: 'normal'
-                        }
-                    });
-                }
-            }
+            if (connectedPkg) {
+                let version;
 
-            if (!version) {
-                for (const prop in pkg.devDependencies) {
+                for (const prop in pkg.dependencies) {
                     if (prop === connectedPkg.name) {
-                        version = pkg.devDependencies[prop];
+                        version = pkg.dependencies[prop];
                         conf.set(connectedPkg.name, {
                             name: connectedPkg.name,
                             path: connectedPath,
@@ -108,14 +93,32 @@ function link() {
                             watch: '**/*',
                             snapshot: {
                                 version,
-                                type: 'dev'
+                                type: 'normal'
                             }
                         });
                     }
                 }
+
+                if (!version) {
+                    for (const prop in pkg.devDependencies) {
+                        if (prop === connectedPkg.name) {
+                            version = pkg.devDependencies[prop];
+                            conf.set(connectedPkg.name, {
+                                name: connectedPkg.name,
+                                path: connectedPath,
+                                version: connectedPkg.version,
+                                watch: '**/*',
+                                snapshot: {
+                                    version,
+                                    type: 'dev'
+                                }
+                            });
+                        }
+                    }
+                }
+                spinner.succeed();
             }
-            spinner.succeed();
-        } else {
+        } catch (err) {
             spinner.fail(`Error: can't find ${connectedPath}`);
         }
     }
