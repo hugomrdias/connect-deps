@@ -1,3 +1,12 @@
+## [0.0.4](https://github.com/hugomrdias/connect-deps/compare/v0.0.3...v0.0.4) (2019-07-30)
+
+
+### Bug Fixes
+
+* protect running cli outside a git repo ([235b9ee](https://github.com/hugomrdias/connect-deps/commit/235b9ee))
+
+
+
 ## [0.0.3](https://github.com/hugomrdias/connect-deps/compare/v0.0.2...v0.0.3) (2019-07-30)
 
 
