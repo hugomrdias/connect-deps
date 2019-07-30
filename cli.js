@@ -119,7 +119,12 @@ function link() {
                 spinner.succeed();
             }
         } catch (err) {
-            spinner.fail(`Error: can't find ${connectedPath}`);
+            if (err.code && err.code === 'ENOENT') {
+                spinner.fail(`Error: can't find ${connectedPath}`);
+            } else {
+                spinner.fail();
+                console.error(err);
+            }
         }
     }
 }
@@ -128,13 +133,14 @@ async function connect() {
     const deps = conf.store;
 
     if (cli.flags.watch) {
+        const queue = new PQueue({ concurrency: 1 });
+        const queuePackInstall = async (deps) => {
+            queue.add(async () => packInstall(deps));
+        };
+        const debounced = pDebounce(queuePackInstall, 1000, { leading: true });
+
         for (const key in deps) {
             const dep = deps[key];
-            const queue = new PQueue({ concurrency: 1 });
-            const queuePackInstall = async (deps) => {
-                queue.add(async () => packInstall(deps));
-            };
-            const debounced = pDebounce(queuePackInstall, 1000, { leading: true });
 
             chokidar
                 .watch(dep.watch, {
