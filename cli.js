@@ -131,13 +131,16 @@ async function connect() {
             const queuePackInstall = async (deps) => {
                 queue.add(async () => packInstall(deps));
             };
-            const debounced = pDebounce(queuePackInstall, 2000, { leading: true });
+            const debounced = pDebounce(queuePackInstall, 1000, { leading: true });
 
             chokidar
                 .watch(dep.watch, {
                     ignored: /node_modules|\.git/,
                     cwd: dep.path,
-                    // awaitWriteFinish: true,
+                    awaitWriteFinish: {
+                        stabilityThreshold: 1000,
+                        pollInterval: 100
+                    },
                     ignoreInitial: true
                 })
                 .on('ready', () => {
