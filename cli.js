@@ -178,20 +178,13 @@ async function reset() {
 
     if (normal.length > 0) {
         spinner.start(`Resetting normal dependencies:  ${normal.join(' ')}`);
-        await execa('yarn', [
-            'add',
-            ...normal
-        ]);
+        await execa('yarn', ['add', ...normal]);
         spinner.succeed();
     }
 
     if (dev.length > 0) {
         spinner.start(`Resetting dev dependencies: ${dev.join(' ')}`);
-        await execa('yarn', [
-            'add',
-            ...dev,
-            '--dev'
-        ]);
+        await execa('yarn', ['add', ...dev, '--dev']);
         spinner.succeed();
     }
     spinner.start('Cleaning up');
