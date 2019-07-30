@@ -16,13 +16,6 @@ const Conf = require('conf');
 const { default: PQueue } = require('p-queue');
 const updateNotifier = require('update-notifier');
 
-const cwd = fs.realpathSync(process.cwd());
-const pkg = readPkg.sync({ cwd });
-const conf = new Conf({
-    cwd,
-    configName: '.connect-deps'
-});
-
 const cli = meow(`
 Usage
     $ connect-deps [cmd]
@@ -52,6 +45,27 @@ Examples
 const cmd = cli.input[0];
 
 updateNotifier({ pkg: cli.pkg }).notify();
+
+let cwd;
+let pkg;
+let conf;
+
+if (['link', 'connect', 'reset'].includes(cmd)) {
+    try {
+        cwd = fs.realpathSync(process.cwd());
+        pkg = readPkg.sync({ cwd });
+        conf = new Conf({
+            cwd,
+            configName: '.connect-deps'
+        });
+    } catch (err) {
+        if (err.code && err.code === 'ENOENT') {
+            console.error('Error: can\'t find package.json');
+        } else {
+            console.error(err);
+        }
+    }
+}
 
 switch (cmd) {
     case 'link':
