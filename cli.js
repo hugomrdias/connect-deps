@@ -67,6 +67,12 @@ if (['link', 'connect', 'reset'].includes(cmd)) {
     }
 }
 
+const packageManager = {
+    add: modules => execa('yarn', ['add', ...modules]),
+    addDev: modules => execa('yarn', ['add', '--dev', ...modules]),
+    pack: (packFile, depPath) => execa('yarn', ['pack', '--filename', packFile], { cwd: depPath })
+};
+
 switch (cmd) {
     case 'link':
         link();
@@ -201,13 +207,13 @@ async function reset() {
 
     if (normal.length > 0) {
         spinner.start(`Resetting normal dependencies:  ${normal.join(' ')}`);
-        await execa('yarn', ['add', ...normal]);
+        await packageManager.add(normal);
         spinner.succeed();
     }
 
     if (dev.length > 0) {
         spinner.start(`Resetting dev dependencies: ${dev.join(' ')}`);
-        await execa('yarn', ['add', ...dev, '--dev']);
+        await packageManager.addDev(dev);
         spinner.succeed();
     }
     spinner.start('Cleaning up');
@@ -226,7 +232,7 @@ async function packInstall(configs = []) {
         const name = `./.connect-deps-cache/${config.name}-${config.version}-${Date.now()}.tgz`;
         const packFile = path.join(cwd, name);
 
-        await execa('yarn', ['pack', '--filename', packFile], { cwd: config.path });
+        await packageManager.pack(packFile, config.path);
         if (config.snapshot.type === 'dev') {
             dev.push(`file:${packFile}`);
         } else {
@@ -237,12 +243,12 @@ async function packInstall(configs = []) {
 
     if (normal.length > 0) {
         spinner.start(`Installing dependencies: ${normal.join(' ')}`);
-        await execa('yarn', ['add', ...normal]);
+        await packageManager.add(normal);
         spinner.succeed();
     }
     if (dev.length > 0) {
         spinner.start(`Installing dev dependencies: ${dev.join(' ')}`);
-        await execa('yarn', ['add', '--dev', ...dev]);
+        await packageManager.addDev(dev);
         spinner.succeed();
     }
 }
