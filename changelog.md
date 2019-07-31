@@ -1,3 +1,12 @@
+## [0.0.6](https://github.com/hugomrdias/connect-deps/compare/v0.0.5...v0.0.6) (2019-07-31)
+
+
+### Bug Fixes
+
+* remove debugging leftover ([5cad511](https://github.com/hugomrdias/connect-deps/commit/5cad511))
+
+
+
 ## [0.0.5](https://github.com/hugomrdias/connect-deps/compare/v0.0.4...v0.0.5) (2019-07-31)
 
 
