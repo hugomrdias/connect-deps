@@ -1,3 +1,13 @@
+## [0.0.7](https://github.com/hugomrdias/connect-deps/compare/v0.0.6...v0.0.7) (2019-07-31)
+
+
+### Features
+
+* add support for npm ([#10](https://github.com/hugomrdias/connect-deps/issues/10)) ([f34f336](https://github.com/hugomrdias/connect-deps/commit/f34f336))
+* make it queue from multiple repos within the debounce ([1bdd9d3](https://github.com/hugomrdias/connect-deps/commit/1bdd9d3))
+
+
+
 ## [0.0.6](https://github.com/hugomrdias/connect-deps/compare/v0.0.5...v0.0.6) (2019-07-31)
 
 
