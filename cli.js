@@ -84,8 +84,11 @@ switch (cmd) {
 
 function link() {
     // create the folder to store the pack files
-    fs.mkdirSync(path.join(cwd, '.connect-deps-cache'), { recursive: true });
     const inputs = cli.input.slice(1);
+
+    if (inputs.length === 0) {
+        cli.showHelp();
+    }
 
     for (const input of inputs) {
         const spinner = ora(`Linking ${input}`).start();
@@ -94,6 +97,7 @@ function link() {
         try {
             const connectedPkg = readPkg.sync({ cwd: connectedPath });
 
+            console.log('object');
             if (connectedPkg) {
                 let version;
 
@@ -130,6 +134,7 @@ function link() {
                         }
                     }
                 }
+                fs.mkdirSync(path.join(cwd, '.connect-deps-cache'), { recursive: true });
                 spinner.succeed();
             }
         } catch (err) {
@@ -151,7 +156,7 @@ async function connect() {
         const queuePackInstall = async (deps) => {
             queue.add(async () => packInstall(deps));
         };
-        const debounced = pDebounce(queuePackInstall, 1000, { leading: true });
+        const debounced = pDebounce(queuePackInstall, 1000);
 
         for (const key in deps) {
             const dep = deps[key];
