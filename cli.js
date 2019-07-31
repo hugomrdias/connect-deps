@@ -15,6 +15,7 @@ const readPkg = require('read-pkg');
 const Conf = require('conf');
 const { default: PQueue } = require('p-queue');
 const updateNotifier = require('update-notifier');
+const hasYarn = require('has-yarn');
 
 const cli = meow(`
 Usage
@@ -67,11 +68,33 @@ if (['link', 'connect', 'reset'].includes(cmd)) {
     }
 }
 
-const packageManager = {
-    add: modules => execa('yarn', ['add', ...modules]),
-    addDev: modules => execa('yarn', ['add', '--dev', ...modules]),
-    pack: (packFile, depPath) => execa('yarn', ['pack', '--filename', packFile], { cwd: depPath })
-};
+let packageManager;
+
+if (hasYarn(cwd)) {
+    packageManager = {
+        add: modules => execa('yarn', ['add', ...modules]),
+        addDev: modules => execa('yarn', ['add', '--dev', ...modules]),
+        pack: (packFile, depPath) =>
+            execa('yarn', ['pack', '--filename', packFile], { cwd: depPath })
+    };
+} else {
+    packageManager = {
+        add: modules => execa('npm', ['install', ...modules]),
+        addDev: modules => execa('npm', ['install', '--save-dev', ...modules]),
+        pack: async (packFile, depPath) => {
+            const parsedPath = path.parse(packFile);
+            const filename = parsedPath.base;
+            // The filename npm creates doesn't have a timestamp
+            const packName = filename.substring(0, filename.lastIndexOf('-')) + '.tgz';
+            const cacheDir = parsedPath.dir;
+
+            await execa('npm', ['pack', depPath], { cwd: cacheDir });
+            fs.renameSync(
+                path.join(cacheDir, packName),
+                path.join(cacheDir, filename));
+        }
+    };
+}
 
 switch (cmd) {
     case 'link':
