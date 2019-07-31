@@ -184,9 +184,9 @@ async function connect() {
         const queuePackInstall = async (deps) => {
             queue.add(async () => packInstall(deps));
         };
-        const debounced = pDebounce(queuePackInstall, 1000);
 
         for (const key in deps) {
+            const debounced = pDebounce(queuePackInstall, 1000);
             const dep = deps[key];
 
             chokidar
