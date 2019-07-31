@@ -97,7 +97,6 @@ function link() {
         try {
             const connectedPkg = readPkg.sync({ cwd: connectedPath });
 
-            console.log('object');
             if (connectedPkg) {
                 let version;
 
