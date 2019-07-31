@@ -1,3 +1,12 @@
+## [0.0.5](https://github.com/hugomrdias/connect-deps/compare/v0.0.4...v0.0.5) (2019-07-31)
+
+
+### Features
+
+* empty link help, run trailing call ([3ee0c1b](https://github.com/hugomrdias/connect-deps/commit/3ee0c1b)), closes [#9](https://github.com/hugomrdias/connect-deps/issues/9) [#8](https://github.com/hugomrdias/connect-deps/issues/8)
+
+
+
 ## [0.0.4](https://github.com/hugomrdias/connect-deps/compare/v0.0.3...v0.0.4) (2019-07-30)
 
 
