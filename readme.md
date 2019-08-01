@@ -2,11 +2,9 @@
 
 > This is a CLI tool that intends to be a better yarn link
 
-When you do a yarn/npm link in the current repo, it creates a symlink to the dependency in your machine and this gives you the wrong dependency tree, because node_modules inside the linked dependency will be the one already in the there not the one that you would get from a clean yarn install in the current repo.   
+When you do a yarn/npm link in the current repo, it creates a symlink to the dependency in your machine and this gives you the wrong dependency tree, because node_modules inside the linked dependency will be the one already in the there not the one that you would get from a clean yarn/npm install in the current repo.   
 
 This can became problematic in some cases, to solve this problem this package "links" (we call it connect) a dependency by running `yarn pack` in the connected dependency and `yarn add file:/path/to/pack.tgz` in the current repo.
-
-> NOTICE: yarn support only, PRs welcome for npm support!
 
 
 ## Usage
