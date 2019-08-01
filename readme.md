@@ -1,6 +1,6 @@
 # connect-deps [![NPM Version](https://img.shields.io/npm/v/connect-deps.svg)](https://www.npmjs.com/package/connect-deps) [![NPM Downloads](https://img.shields.io/npm/dt/connect-deps.svg)](https://www.npmjs.com/package/connect-deps) [![NPM License](https://img.shields.io/npm/l/connect-deps.svg)](https://www.npmjs.com/package/connect-deps) [![Build Status](https://travis-ci.org/hugomrdias/connect-deps.svg?branch=master)](https://travis-ci.org/hugomrdias/connect-deps) [![codecov](https://codecov.io/gh/hugomrdias/connect-deps/badge.svg?branch=master)](https://codecov.io/gh/hugomrdias/connect-deps?branch=master)
 
-> This is a CLI tool that intends to be a better yarn link
+> This is a CLI tool that intends to be a better yarn/npm link
 
 When you do a yarn/npm link in the current repo, it creates a symlink to the dependency in your machine and this gives you the wrong dependency tree, because node_modules inside the linked dependency will be the one already in the there not the one that you would get from a clean yarn/npm install in the current repo.   
 
