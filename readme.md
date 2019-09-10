@@ -6,6 +6,8 @@ When you do a yarn/npm link in the current repo, it creates a symlink to the dep
 
 This can became problematic in some cases, to solve this problem this package "links" (we call it connect) a dependency by running `yarn pack` in the connected dependency and `yarn add file:/path/to/pack.tgz` in the current repo.
 
+For a real world example where `npm link` failed, see the blog post [When npm link fails](https://vmx.cx/cgi-bin/blog/index.cgi/when-npm-link-fails%3A2019-08-01%3Aen%2CJavaScript%2Cnpm).
+
 
 ## Usage
 
