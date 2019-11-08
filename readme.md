@@ -13,7 +13,7 @@ For a real world example where `npm link` failed, see the blog post [When npm li
 
 ```bash
 # first link the dependency from your current repo
-connect-deps link ../package-linkded
+connect-deps link ../package-linked
 # after, you can `connect` to stay in sync
 connect-deps connect
 # or use watch mode to listen to changes and update the current repo
