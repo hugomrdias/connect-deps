@@ -189,11 +189,7 @@ function link() {
 async function connect() {
     const deps = conf.store;
 
-    try {
-        await packInstall(Object.values(deps));
-    } catch (err) {
-        console.error(err);
-    }
+    await packInstall(Object.values(deps));
 
     if (cli.flags.watch) {
         const queue = new PQueue({ concurrency: 1 });
@@ -244,19 +240,34 @@ async function reset() {
 
     if (normal.length > 0) {
         spinner.start(`Resetting normal dependencies:  ${normal.join(' ')}`);
-        await packageManager.add(normal);
-        spinner.succeed();
+        try {
+            await packageManager.add(normal);
+            spinner.succeed();
+        } catch (err) {
+            console.error(err);
+            spinner.fail(err.message);
+        }
     }
 
     if (dev.length > 0) {
         spinner.start(`Resetting dev dependencies: ${dev.join(' ')}`);
-        await packageManager.addDev(dev);
-        spinner.succeed();
+        try {
+            await packageManager.addDev(dev);
+            spinner.succeed();
+        } catch (err) {
+            console.error(err);
+            spinner.fail();
+        }
     }
     spinner.start('Cleaning up');
-    await del(path.join(cwd, '.connect-deps.json'));
-    await del(path.join(cwd, '.connect-deps-cache'), { force: true });
-    spinner.succeed();
+    try {
+        await del(path.join(cwd, '.connect-deps.json'));
+        await del(path.join(cwd, '.connect-deps-cache'), { force: true });
+        spinner.succeed();
+    } catch (err) {
+        console.error(err);
+        spinner.fail();
+    }
 }
 
 async function packInstall(configs = []) {
@@ -266,27 +277,42 @@ async function packInstall(configs = []) {
 
     for (const config of configs) {
         spinner.start(`Packing ${config.name}`);
-        const name = `./.connect-deps-cache/${config.name.replace('/', '--').replace('@', '--')}-${config.version}-${Date.now()}.tgz`;
-        const packFile = path.join(cwd, name);
+        try {
+            const name = `./.connect-deps-cache/${config.name.replace('/', '--').replace('@', '--')}-${config.version}-${Date.now()}.tgz`;
+            const packFile = path.join(cwd, name);
 
-        await packageManager.pack(packFile, config.path);
-        if (config.snapshot.type === 'dev') {
-            dev.push(`file:${packFile}`);
-        } else {
-            normal.push(`file:${packFile}`);
+            await packageManager.pack(packFile, config.path);
+            if (config.snapshot.type === 'dev') {
+                dev.push(`file:${packFile}`);
+            } else {
+                normal.push(`file:${packFile}`);
+            }
+            spinner.succeed();
+        } catch (err) {
+            spinner.fail();
+            throw err;
         }
-        spinner.succeed();
     }
 
     if (normal.length > 0) {
         spinner.start(`Installing dependencies: ${normal.join(' ')}`);
-        await packageManager.add(normal);
-        spinner.succeed();
+        try {
+            await packageManager.add(normal);
+            spinner.succeed();
+        } catch (err) {
+            spinner.fail();
+            throw err;
+        }
     }
     if (dev.length > 0) {
         spinner.start(`Installing dev dependencies: ${dev.join(' ')}`);
-        await packageManager.addDev(dev);
-        spinner.succeed();
+        try {
+            await packageManager.addDev(dev);
+            spinner.succeed();
+        } catch (err) {
+            spinner.fail();
+            throw err;
+        }
     }
 }
 
