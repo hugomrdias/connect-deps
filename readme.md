@@ -21,6 +21,10 @@ connect-deps connect -w
 # after you done with coding run `reset` to cleanup and go back to previous versions
 connect-deps reset
 
+# tips
+# link multiple, connect and watch in one command
+connect-deps link ../package-linked ../package-linked2 --connect --watch
+
 ```
 
 
@@ -43,10 +47,12 @@ Commands
 
 Options
     --help               Show help.
-    --watch, -w          Watch for changes, works with the 'connect' command only.
+    --watch, -w          Watch for changes.
+    --connect, -c        Can be used with link command to also connect.
 
 Examples
     $ connect-deps link ../dep-folder
+    $ connect-deps link ../dep-folder1 ../dep-folder2 -c -w
     $ connect-deps connect -w
 ```
 

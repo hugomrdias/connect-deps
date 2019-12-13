@@ -29,16 +29,22 @@ Commands
 Options
     --help               Show help.
     --version            Show version.
-    --watch, -w          Watch for changes, works with the 'connect' command only.
+    --watch, -w          Watch for changes.
+    --connect, -c        Can be used with link command to also connect.
 
 Examples
     $ connect-deps link ../dep-folder1 ../dep-folder2
+    $ connect-deps link ../dep-folder1 ../dep-folder2 -c -w
     $ connect-deps connect -w
 `, {
     flags: {
         watch: {
             type: 'boolean',
             alias: 'w'
+        },
+        connect: {
+            type: 'boolean',
+            alias: 'c'
         }
     }
 });
@@ -174,10 +180,20 @@ function link() {
             }
         }
     }
+
+    if (cli.flags.connect) {
+        connect();
+    }
 }
 
 async function connect() {
     const deps = conf.store;
+
+    try {
+        await packInstall(Object.values(deps));
+    } catch (err) {
+        console.error(err);
+    }
 
     if (cli.flags.watch) {
         const queue = new PQueue({ concurrency: 1 });
@@ -206,12 +222,6 @@ async function connect() {
                     await debounced([dep]);
                 })
                 .on('error', err => console.error('error watching: ', err));
-        }
-    } else {
-        try {
-            await packInstall(Object.values(deps));
-        } catch (err) {
-            console.error(err);
         }
     }
 }
@@ -256,7 +266,7 @@ async function packInstall(configs = []) {
 
     for (const config of configs) {
         spinner.start(`Packing ${config.name}`);
-        const name = `./.connect-deps-cache/${config.name}-${config.version}-${Date.now()}.tgz`;
+        const name = `./.connect-deps-cache/${config.name.replace('/', '--').replace('@', '--')}-${config.version}-${Date.now()}.tgz`;
         const packFile = path.join(cwd, name);
 
         await packageManager.pack(packFile, config.path);
