@@ -1,3 +1,12 @@
+# [0.1.0](https://github.com/hugomrdias/connect-deps/compare/v0.0.7...v0.1.0) (2019-12-13)
+
+
+### Features
+
+* support scoped package, link --connect and connect when --watch ([6b74b5f](https://github.com/hugomrdias/connect-deps/commit/6b74b5f))
+
+
+
 ## [0.0.7](https://github.com/hugomrdias/connect-deps/compare/v0.0.6...v0.0.7) (2019-07-31)
 
 

@@ -1,6 +1,6 @@
 {
     "name": "connect-deps",
-    "version": "0.0.7",
+    "version": "0.1.0",
     "description": "This is a CLI tool that intends to be a better yarn/npm link",
     "repository": "hugomrdias/connect-deps",
     "author": "Hugo Dias <hugomrdias@gmail.com> (hugodias.me)",
