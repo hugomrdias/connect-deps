@@ -1,3 +1,12 @@
+## [0.1.1](https://github.com/hugomrdias/connect-deps/compare/v0.1.0...v0.1.1) (2019-12-13)
+
+
+### Bug Fixes
+
+* add try/catch to stop spinner on error ([53979da](https://github.com/hugomrdias/connect-deps/commit/53979da))
+
+
+
 # [0.1.0](https://github.com/hugomrdias/connect-deps/compare/v0.0.7...v0.1.0) (2019-12-13)
 
 
