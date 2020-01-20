@@ -88,16 +88,12 @@ if (hasYarn(cwd)) {
         add: modules => execa('npm', ['install', ...modules]),
         addDev: modules => execa('npm', ['install', '--save-dev', ...modules]),
         pack: async (packFile, depPath) => {
-            const parsedPath = path.parse(packFile);
-            const filename = parsedPath.base;
-            // The filename npm creates doesn't have a timestamp
-            const packName = filename.substring(0, filename.lastIndexOf('-')) + '.tgz';
-            const cacheDir = parsedPath.dir;
+            const cacheDir = path.parse(packFile).dir;
+            const out = await execa('npm', ['pack', depPath], { cwd: cacheDir });
 
-            await execa('npm', ['pack', depPath], { cwd: cacheDir });
             fs.renameSync(
-                path.join(cacheDir, packName),
-                path.join(cacheDir, filename));
+                path.join(cacheDir, out.stdout),
+                packFile);
         }
     };
 }
