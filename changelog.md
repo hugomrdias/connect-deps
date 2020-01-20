@@ -1,3 +1,17 @@
+# [0.2.0](https://github.com/hugomrdias/connect-deps/compare/v0.1.1...v0.2.0) (2020-01-20)
+
+
+### Bug Fixes
+
+* fix path handling for non published packages with npm ([bcac118](https://github.com/hugomrdias/connect-deps/commit/bcac118))
+
+
+### Features
+
+* support unpublished package ([405b813](https://github.com/hugomrdias/connect-deps/commit/405b813))
+
+
+
 ## [0.1.1](https://github.com/hugomrdias/connect-deps/compare/v0.1.0...v0.1.1) (2019-12-13)
 
 
