@@ -79,6 +79,7 @@ let packageManager;
 if (hasYarn(cwd)) {
     packageManager = {
         add: modules => execa('yarn', ['add', ...modules]),
+        rm: modules => execa('yarn', ['remove', ...modules]),
         addDev: modules => execa('yarn', ['add', '--dev', ...modules]),
         pack: (packFile, depPath) =>
             execa('yarn', ['pack', '--filename', packFile], { cwd: depPath })
@@ -86,6 +87,7 @@ if (hasYarn(cwd)) {
 } else {
     packageManager = {
         add: modules => execa('npm', ['install', ...modules]),
+        rm: modules => execa('npm', ['rm', ...modules]),
         addDev: modules => execa('npm', ['install', '--save-dev', ...modules]),
         pack: async (packFile, depPath) => {
             const cacheDir = path.parse(packFile).dir;
@@ -131,6 +133,7 @@ function link() {
             if (connectedPkg) {
                 let version;
 
+                // search deps for package
                 for (const prop in pkg.dependencies) {
                     if (prop === connectedPkg.name) {
                         version = pkg.dependencies[prop];
@@ -147,6 +150,7 @@ function link() {
                     }
                 }
 
+                // search dev deps for package
                 if (!version) {
                     for (const prop in pkg.devDependencies) {
                         if (prop === connectedPkg.name) {
@@ -163,6 +167,21 @@ function link() {
                             });
                         }
                     }
+                }
+
+                // if still not found probably the package is not published
+                // so we add a placeholder thats deleted on reset
+                if (!version) {
+                    conf.set(connectedPkg.name, {
+                        name: connectedPkg.name,
+                        path: connectedPath,
+                        version: connectedPkg.version,
+                        watch: '**/*',
+                        snapshot: {
+                            version: 'DELETE',
+                            type: 'normal'
+                        }
+                    });
                 }
                 fs.mkdirSync(path.join(cwd, '.connect-deps-cache'), { recursive: true });
                 spinner.succeed();
@@ -222,12 +241,15 @@ async function reset() {
     const deps = conf.store;
     const normal = [];
     const dev = [];
+    const remove = [];
     const spinner = ora('Resetting dependencies');
 
     for (const key in deps) {
         const dep = deps[key];
 
-        if (dep.snapshot.type === 'dev') {
+        if (dep.snapshot.version === 'DELETE') {
+            remove.push(dep.name);
+        } else if (dep.snapshot.type === 'dev') {
             dev.push(`${dep.name}@${dep.snapshot.version}`);
         } else {
             normal.push(`${dep.name}@${dep.snapshot.version}`);
@@ -249,6 +271,17 @@ async function reset() {
         spinner.start(`Resetting dev dependencies: ${dev.join(' ')}`);
         try {
             await packageManager.addDev(dev);
+            spinner.succeed();
+        } catch (err) {
+            console.error(err);
+            spinner.fail();
+        }
+    }
+
+    if (remove.length > 0) {
+        spinner.start(`Resetting unpublished dependencies: ${dev.join(' ')}`);
+        try {
+            await packageManager.rm(remove);
             spinner.succeed();
         } catch (err) {
             console.error(err);
