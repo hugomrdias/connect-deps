@@ -91,7 +91,7 @@ if (hasYarn(cwd)) {
         addDev: modules => execa('npm', ['install', '--save-dev', ...modules]),
         pack: async (packFile, depPath) => {
             const cacheDir = path.parse(packFile).dir;
-            const out = await execa('npm', ['pack', depPath], { cwd: cacheDir });
+            const out = await execa('npm', ['pack', '-s', depPath], { cwd: cacheDir });
 
             fs.renameSync(
                 path.join(cacheDir, out.stdout),
