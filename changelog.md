@@ -1,3 +1,12 @@
+## [0.2.1](https://github.com/hugomrdias/connect-deps/compare/v0.2.0...v0.2.1) (2020-01-30)
+
+
+### Bug Fixes
+
+* fix connect for package with prepare scripts ([8ea4833](https://github.com/hugomrdias/connect-deps/commit/8ea4833)), closes [#20](https://github.com/hugomrdias/connect-deps/issues/20)
+
+
+
 # [0.2.0](https://github.com/hugomrdias/connect-deps/compare/v0.1.1...v0.2.0) (2020-01-20)
 
 
