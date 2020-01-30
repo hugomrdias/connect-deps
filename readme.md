@@ -8,6 +8,9 @@ This can became problematic in some cases, to solve this problem this package "l
 
 For a real world example where `npm link` failed, see the blog post [When npm link fails](https://vmx.cx/cgi-bin/blog/index.cgi/when-npm-link-fails%3A2019-08-01%3Aen%2CJavaScript%2Cnpm).
 
+Support for unpublished packages or packages not listed in package.json is also included.
+
+
 
 ## Usage
 
@@ -20,6 +23,7 @@ connect-deps connect
 connect-deps connect -w
 # after you done with coding run `reset` to cleanup and go back to previous versions
 connect-deps reset
+# Reset may not leave your package.json exactly like before `connect` (https://github.com/hugomrdias/connect-deps/issues/3#issuecomment-517668975) but the change should not be armful and you can always ignore the change before commiting.
 
 # tips
 # link multiple, connect and watch in one command
