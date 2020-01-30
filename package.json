@@ -63,7 +63,7 @@
     "husky": {
         "hooks": {
             "pre-commit": "lint-staged",
-            "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+            "commit-msg": "commitlint -E HUSKY_GIT_PARAMS || (echo \"Your commit message is not lost! Try again with: git commit --edit --file=$(git rev-parse --show-toplevel)/.git/COMMIT_EDITMSG\" && exit 1)"
         }
     },
     "lint-staged": {
