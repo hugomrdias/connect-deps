@@ -23,7 +23,7 @@ connect-deps connect
 connect-deps connect -w
 # after you done with coding run `reset` to cleanup and go back to previous versions
 connect-deps reset
-# Reset may not leave your package.json exactly like before `connect` (https://github.com/hugomrdias/connect-deps/issues/3#issuecomment-517668975) but the change should not be armful and you can always ignore the change before commiting.
+# Reset may not leave your package.json exactly like before `connect` (https://github.com/hugomrdias/connect-deps/issues/3#issuecomment-517668975) but the change should not be harmful and you can always ignore the change before commiting.
 
 # tips
 # link multiple, connect and watch in one command
