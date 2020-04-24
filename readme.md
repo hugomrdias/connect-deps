@@ -53,6 +53,7 @@ Options
     --help               Show help.
     --watch, -w          Watch for changes.
     --connect, -c        Can be used with link command to also connect.
+    --manager            Package manager to use npm or yarn.
 
 Examples
     $ connect-deps link ../dep-folder

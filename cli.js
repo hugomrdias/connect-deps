@@ -31,6 +31,7 @@ Options
     --version            Show version.
     --watch, -w          Watch for changes.
     --connect, -c        Can be used with link command to also connect.
+    --manager            Package manager to use npm or yarn. Defaults: 'yarn'
 
 Examples
     $ connect-deps link ../dep-folder1 ../dep-folder2
@@ -45,6 +46,11 @@ Examples
         connect: {
             type: 'boolean',
             alias: 'c'
+        },
+        manager: {
+            type: 'string',
+            alias: 'm',
+            default: hasYarn() ? 'yarn' : 'npm'
         }
     }
 });
@@ -76,7 +82,7 @@ if (['link', 'connect', 'reset'].includes(cmd)) {
 
 let packageManager;
 
-if (hasYarn(cwd)) {
+if (cli.flags.manager === 'yarn') {
     packageManager = {
         add: modules => execa('yarn', ['add', ...modules]),
         rm: modules => execa('yarn', ['remove', ...modules]),
@@ -84,7 +90,9 @@ if (hasYarn(cwd)) {
         pack: (packFile, depPath) =>
             execa('yarn', ['pack', '--filename', packFile], { cwd: depPath })
     };
-} else {
+}
+
+if (cli.flags.manager === 'npm') {
     packageManager = {
         add: modules => execa('npm', ['install', ...modules]),
         rm: modules => execa('npm', ['rm', ...modules]),
