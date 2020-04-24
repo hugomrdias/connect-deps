@@ -1,3 +1,17 @@
+# [0.3.0](https://github.com/hugomrdias/connect-deps/compare/v0.2.2...v0.3.0) (2020-04-24)
+
+
+### Bug Fixes
+
+* show help on how to recover a failed commit message ([#21](https://github.com/hugomrdias/connect-deps/issues/21)) ([5dfe5fd](https://github.com/hugomrdias/connect-deps/commit/5dfe5fd61161a876b01de6a9f1a1fe1f65592651)), closes [#4](https://github.com/hugomrdias/connect-deps/issues/4)
+
+
+### Features
+
+* add manager option ([eee5168](https://github.com/hugomrdias/connect-deps/commit/eee5168c2426974b1985a039386cd7982bf1638f))
+
+
+
 ## [0.2.2](https://github.com/hugomrdias/connect-deps/compare/v0.2.1...v0.2.2) (2020-01-30)
 
 
