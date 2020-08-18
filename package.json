@@ -12,13 +12,7 @@
     },
     "scripts": {
         "test": "nyc ava",
-        "lint": "eslint --cache *.js src/*.js",
-        "validate": "run-p lint test",
-        "precommit": "yarn validate",
-        "version": "yarn changelog && git add changelog.md",
-        "changelog": "conventional-changelog -p angular -i changelog.md -s -r 0",
-        "cov": "yarn test && nyc report --reporter=html && hs coverage -s -o -c-1",
-        "cov:report": "nyc report --reporter=text-lcov > coverage.lcov && codecov"
+        "lint": "eslint --cache *.js src/*.js"
     },
     "files": [
         "index.js",
@@ -48,17 +42,12 @@
     "devDependencies": {
         "@commitlint/cli": "^9.0.1",
         "@commitlint/config-conventional": "^9.0.1",
-        "ava": "^3.7.1",
-        "codecov": "^3.7.2",
-        "conventional-changelog-cli": "^2.1.0",
         "eslint": "^4.7.1",
         "eslint-config-halo": "^2.3.3",
         "http-serve": "^1.0.1",
         "husky": "^4.2.5",
         "lint-staged": "^10.1.7",
-        "np": "^6.2.2",
-        "npm-run-all": "^4.1.1",
-        "nyc": "^15.0.1"
+        "np": "^6.2.2"
     },
     "husky": {
         "hooks": {

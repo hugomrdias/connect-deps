@@ -1,4 +1,4 @@
-# connect-deps [![NPM Version](https://img.shields.io/npm/v/connect-deps.svg)](https://www.npmjs.com/package/connect-deps) [![NPM Downloads](https://img.shields.io/npm/dt/connect-deps.svg)](https://www.npmjs.com/package/connect-deps) [![NPM License](https://img.shields.io/npm/l/connect-deps.svg)](https://www.npmjs.com/package/connect-deps) [![Build Status](https://travis-ci.org/hugomrdias/connect-deps.svg?branch=master)](https://travis-ci.org/hugomrdias/connect-deps) [![codecov](https://codecov.io/gh/hugomrdias/connect-deps/badge.svg?branch=master)](https://codecov.io/gh/hugomrdias/connect-deps?branch=master)
+# connect-deps [![NPM Version](https://img.shields.io/npm/v/connect-deps.svg)](https://www.npmjs.com/package/connect-deps) [![NPM Downloads](https://img.shields.io/npm/dt/connect-deps.svg)](https://www.npmjs.com/package/connect-deps) [![NPM License](https://img.shields.io/npm/l/connect-deps.svg)](https://www.npmjs.com/package/connect-deps)
 
 > This is a CLI tool that intends to be a better yarn/npm link
 
