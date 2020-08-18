@@ -1,3 +1,12 @@
+# [0.4.0](https://github.com/hugomrdias/connect-deps/compare/v0.3.0...v0.4.0) (2020-08-18)
+
+
+### Bug Fixes
+
+* update deps and remove lock ([5d4defc](https://github.com/hugomrdias/connect-deps/commit/5d4defc150b85dd71994c5a8ecd83b243dd7e8fe))
+
+
+
 # [0.3.0](https://github.com/hugomrdias/connect-deps/compare/v0.2.2...v0.3.0) (2020-04-24)
 
 
