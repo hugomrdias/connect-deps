@@ -37,7 +37,7 @@
         "p-debounce": "^2.1.0",
         "p-queue": "^6.3.0",
         "read-pkg": "^5.2.0",
-        "update-notifier": "^4.1.1"
+        "update-notifier": "^5.0.0"
     },
     "devDependencies": {
         "@commitlint/cli": "^9.0.1",
