@@ -28,7 +28,7 @@
     ],
     "dependencies": {
         "chokidar": "^3.3.1",
-        "conf": "^7.1.2",
+        "conf": "^8.0.0",
         "del": "^5.1.0",
         "execa": "^4.0.0",
         "has-yarn": "^2.1.0",
