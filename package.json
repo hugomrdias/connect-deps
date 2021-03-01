@@ -40,7 +40,7 @@
         "update-notifier": "^4.1.1"
     },
     "devDependencies": {
-        "@commitlint/cli": "^9.0.1",
+        "@commitlint/cli": "^12.0.1",
         "@commitlint/config-conventional": "^9.0.1",
         "eslint": "^4.7.1",
         "eslint-config-halo": "^2.3.3",
