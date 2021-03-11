@@ -56,6 +56,7 @@ Examples
 });
 
 const cmd = cli.input[0];
+const reqNpmSemVer = '^7.6.2';
 
 updateNotifier({ pkg: cli.pkg }).notify();
 
@@ -82,31 +83,57 @@ if (['link', 'connect', 'reset'].includes(cmd)) {
 
 let packageManager;
 
-if (cli.flags.manager === 'yarn') {
-    packageManager = {
-        add: modules => execa('yarn', ['add', ...modules]),
-        rm: modules => execa('yarn', ['remove', ...modules]),
-        addDev: modules => execa('yarn', ['add', '--dev', ...modules]),
-        pack: (packFile, depPath) =>
-            execa('yarn', ['pack', '--filename', packFile], { cwd: depPath })
-    };
-}
+async function setupPackageManager() {
+    // Manager already initialized
+    if (packageManager) return;
 
-if (cli.flags.manager === 'npm') {
-    packageManager = {
-        add: modules => execa('npm', ['install', ...modules]),
-        rm: modules => execa('npm', ['rm', ...modules]),
-        addDev: modules => execa('npm', ['install', '--save-dev', ...modules]),
-        pack: async (packFile, depPath) => {
-            const cacheDir = path.parse(packFile).dir;
-            const out = await execa('npm', ['pack', '-s', depPath], { cwd: cacheDir });
-
-            fs.renameSync(
-                path.join(cacheDir, out.stdout),
-                packFile);
+    if (cli.flags.manager === 'yarn') {
+        packageManager = {
+            add: modules => execa('yarn', ['add', ...modules]),
+            rm: modules => execa('yarn', ['remove', ...modules]),
+            addDev: modules => execa('yarn', ['add', '--dev', ...modules]),
+            pack: (packFile, depPath) =>
+                execa('yarn', ['pack', '--filename', packFile], { cwd: depPath })
+        };
+    } else if (cli.flags.manager === 'npm') {
+        
+        if(!(await checkNpmVersion())) {
+            throw `Incompatible npm version found. Please use npm that satisfies "${reqNpmSemVer}"`
         }
-    };
+
+        packageManager = {
+            add: modules => execa('npm', ['install', ...modules]),
+            rm: modules => execa('npm', ['rm', ...modules]),
+            addDev: modules => execa('npm', ['install', '--save-dev', ...modules]),
+            pack: async (packFile, depPath) => {
+                const cacheDir = path.parse(packFile).dir;
+                const out = await execa('npx', ['npm', 'pack', '-s', depPath], { cwd: cacheDir });
+    
+                fs.renameSync(
+                    path.join(cacheDir, out.stdout),
+                    packFile);
+            }
+        };
+    } else {
+        console.error('Error: No package manager found!');
+    }
 }
+  
+let npmVersionOk;
+
+async function checkNpmVersion() {
+    if (npmVersionOk == undefined) {
+        let globalNodeModulesPath = (await execa('npm', ['root', '-g'])).stdout;
+        let npmDir = path.join(globalNodeModulesPath, 'npm');
+        let semver = require(path.join(npmDir, 'node_modules', 'semver'));
+        let npmVer = require(npmDir).version;
+        
+        npmVersionOk = semver.satisfies(npmVer, reqNpmSemVer);
+    }
+
+    return npmVersionOk;
+}
+
 
 switch (cmd) {
     case 'link':
@@ -252,6 +279,8 @@ async function reset() {
     const remove = [];
     const spinner = ora('Resetting dependencies');
 
+    await setupPackageManager();
+
     for (const key in deps) {
         const dep = deps[key];
 
@@ -312,6 +341,8 @@ async function packInstall(configs = []) {
     const normal = [];
     const dev = [];
 
+    await setupPackageManager();
+
     for (const config of configs) {
         spinner.start(`Packing ${config.name}`);
         try {
@@ -352,4 +383,3 @@ async function packInstall(configs = []) {
         }
     }
 }
-
