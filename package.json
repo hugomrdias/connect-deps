@@ -41,7 +41,7 @@
     },
     "devDependencies": {
         "@commitlint/cli": "^9.0.1",
-        "@commitlint/config-conventional": "^9.0.1",
+        "@commitlint/config-conventional": "^12.1.1",
         "eslint": "^4.7.1",
         "eslint-config-halo": "^2.3.3",
         "http-serve": "^1.0.1",
